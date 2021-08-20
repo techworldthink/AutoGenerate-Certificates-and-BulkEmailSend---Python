@@ -53,18 +53,25 @@ class Convert:
 
         # BG IMAGE
 
-        """bgmodel = PIL.Image.open("Excel.jpg")
-        newsize = (200, 100)
+        bgmodel = PIL.Image.open("Open.jpg")
+        newsize = (100, 30)
         bgmodel = bgmodel.resize(newsize)
-        F_IMG_CERT = ImageTk.PhotoImage(bgmodel)"""
+        F_IMG_CERT = ImageTk.PhotoImage(bgmodel)
+
+        bgmodel = PIL.Image.open("Generate.jpg")
+        newsize = (100, 30)
+        bgmodel = bgmodel.resize(newsize)
+        S_IMG_CERT = ImageTk.PhotoImage(bgmodel)
 
         self.LOG="Starting..."
 
         
         #labelled frames
-        self.frame_left  =  LabelFrame(master,text="SELECT EXCEL FILE",labelanchor="n",bg="white",bd=15,fg="red",font=self.label_frame_font)
-        self.frame_right  =  LabelFrame(master,text="GENERATE-CERTIFICATES",labelanchor="n",bg="white",bd=15,fg="red",font=self.label_frame_font)
-        self.BTM= Label(master,text=self.LOG,bg="black",fg="green",font=self.frame2_font,width=1, anchor='w')
+        self.frame_left  =  LabelFrame(master,text="SELECT EXCEL FILE",labelanchor="n",bg="white",bd=5,fg="red",font=self.label_frame_font)
+        self.frame_right  =  LabelFrame(master,text="GENERATE-CERTIFICATES",labelanchor="n",bg="white",bd=5,fg="red",font=self.label_frame_font)
+        #self.BTM = Label(master,text=self.LOG,bg="black",fg="green",font=self.frame2_font,width=1, anchor='w')
+        self.BTM = ScrolledText(master,height=1,width=5,bg="white",fg="green")
+        self.BTM.insert(tk.INSERT,"-------------LOGS----------\nStarting...")
         
         #frame grids
         self.frame_left.grid(row=0,column=0,sticky="nsew")
@@ -90,8 +97,8 @@ class Convert:
         self.ENTRY_LEFT = Entry(self.frame_left,bg="white",fg="green",textvariable = ButtonVar1,bd=0)
         self.BOX_LEFT_1 = ScrolledText(self.frame_left,width=5)
         self.BOX_LEFT_2 = ScrolledText(self.frame_left,width=5) 
-        self.BTN_LEFT = Button(self.frame_left,text="Open Excel File",height = 2, width = WIDTH_BTN,bg="#d7d9db",bd=10,fg="black",command=lambda:choose_excel())
-        #self.BTN_LEFT.image=F_IMG_CERT
+        self.BTN_LEFT = Button(self.frame_left,text="",image=F_IMG_CERT,height = 20, width = WIDTH_BTN,bg="white",bd=0,fg="black",command=lambda:choose_excel())
+        self.BTN_LEFT.image=F_IMG_CERT
         #self.LABEL_LEFT_B= Label(self.frame_left,text="m",padx=0,pady=0,bg="black",fg="black",font=self.frame2_font,width=WIDTH_LABEL)
         #componants grid for frame 1
         self.LABEL_LEFT.grid(row=0,column=0,sticky="nsew",columnspan=2)
@@ -117,15 +124,17 @@ class Convert:
         #componants for frame 2
         self.LABEL_RIGHT= Label(self.frame_right,text="DETAILS OF CERTIFICATE",padx=0,pady=0,bg="white",fg="black",font=self.frame2_font,width=WIDTH_LABEL)
         self.LABEL_RIGHT_2= Label(self.frame_right,image=IMG_CERT,text="DETAILS OF CERTIFICATE",padx=0,pady=0,bg="white",fg="black",font=self.frame2_font,width=WIDTH_LABEL)
-        self.BTN_RIGHT_1 = Button(self.frame_right,text="Open Model Certificate",height = 2, width = WIDTH_BTN,bg="#d7d9db",bd=10,fg="black",command=lambda:choose_image())
+        self.BTN_RIGHT_1 = Button(self.frame_right,text="",image=F_IMG_CERT,height = 50, width = WIDTH_BTN,bg="white",bd=0,fg="black",command=lambda:choose_image())
         self.LABEL_RIGHT_2.image=IMG_CERT
+        self.BTN_RIGHT_1.image=F_IMG_CERT
         
         self.LABEL_RIGHT_IM = Label(self.frame_right,text="Size",padx=0,pady=0,bg="white",fg="black",font=self.frame2_font,width=WIDTH_LABEL)
-        self.ENTRY_LEFT_IMW = Entry(self.frame_right,bg="white",fg="black",textvariable = ButtonVar2,bd=1)
-        self.ENTRY_LEFT_IMH = Entry(self.frame_right,bg="white",fg="black",textvariable = ButtonVar3,bd=1)
+        self.ENTRY_LEFT_IMW = Entry(self.frame_right,bg="white",fg="black",textvariable = ButtonVar2,bd=5)
+        self.ENTRY_LEFT_IMH = Entry(self.frame_right,bg="white",fg="black",textvariable = ButtonVar3,bd=5)
 
-        self.BTN_RIGHT_GNT = Button(self.frame_right,text="GENERATE",height = 2, width = WIDTH_BTN,bg="#d7d9db",bd=10,fg="black",command=lambda:generate())
-
+        self.BTN_RIGHT_GNT = Button(self.frame_right,text="GENERATE",image=S_IMG_CERT,height = 40, width = WIDTH_BTN,bg="white",bd=0,fg="black",command=lambda:generate())
+        self.BTN_RIGHT_GNT.image=S_IMG_CERT
+        
         #componants grid for frame 1
         self.LABEL_RIGHT.grid(row=0,column=0,sticky="nsew",columnspan=3)
         self.LABEL_RIGHT_2.grid(row=1,column=0,sticky="nsew",columnspan=3)
@@ -184,14 +193,15 @@ class Convert:
                 self.counts_e += 1
                 return self.counts_e
             
-            
+        
         def choose_excel():
-            self.BTM.config(text = self.BTM.cget("text")+"\n Choose Excel")
+            self.BTM.insert(tk.INSERT,"\nChoose Excel")
             filename = select_file()
             if not filename:
-                self.BTM.config(text = self.BTM.cget("text")+"\n Select Correct format (EXCEL FILES ONLY)")
+                self.BTM.insert(tk.INSERT,"\nSelect Correct format (EXCEL FILES ONLY")
                 return
-            self.BTM.config(text = self.BTM.cget("text")+"\n File Selected")
+            self.BTM.insert(tk.INSERT,"\nOpen File : "+filename)
+            self.BTM.insert(tk.INSERT,"\nFile Selected")
             self.ENTRY_LEFT.delete(0,"end")
             self.ENTRY_LEFT.insert(0, filename)
             self.counts_n = 0
@@ -212,14 +222,15 @@ class Convert:
             self.BOX_LEFT_2.insert(tk.INSERT,''.join(list(email_result)))
             self.BOX_LEFT_1.configure(state ='disabled')
             self.BOX_LEFT_2.configure(state ='disabled')
-            self.BTM.config(text = self.BTM.cget("text")+"\n Data Displayed")
+            self.BTM.insert(tk.INSERT,"\nData Displayed")
 
         def choose_image():
-            self.BTM.config(text = self.BTM.cget("text")+"\n Choose Model certificate")
+            self.BTM.insert(tk.INSERT,"\nChoose Model certificate")
             filename = select_file()
             if not filename:
-                self.BTM.config(text = self.BTM.cget("text")+"\n Select A valid Image File (.png)")
+                self.BTM.insert(tk.INSERT,"\nSelect A valid Image File (.png)")
                 return
+            self.BTM.insert(tk.INSERT,"\nOpen File : "+filename)
             model = PIL.Image.open(filename)
             self.model_img = model
             self.IM_width, self.IM_height = model.size
@@ -233,10 +244,10 @@ class Convert:
             self.ENTRY_LEFT_IMH.delete(0,"end")
             self.ENTRY_LEFT_IMW.insert(0, self.IM_width)
             self.ENTRY_LEFT_IMH.insert(0, self.IM_height)
-            self.BTM.config(text = self.BTM.cget("text")+"\n Find H, W")
+            self.BTM.insert(tk.INSERT,"\nFind H, W")
             
         def generate():
-            self.BTM.config(text = self.BTM.cget("text")+"\n Certificate Generating ..... wait ")
+            self.BTM.insert(tk.INSERT,"\nCertificate Generating ..... wait ")
             for name in self.name_list:
                 image = self.model_img      
                 background = PIL.Image.new("RGB",image.size, (255, 255, 255))
@@ -260,7 +271,8 @@ class Convert:
                     csvwriter.writerow(row_data)
     
                 self.ID=str(int(self.ID)+1)
-            self.BTM.config(text = self.BTM.cget("text")+"\n Certificate Generating compleated..... ")
+            self.BTM.insert(tk.INSERT,"\n Certificate Generating compleated.....")
+
             
             
         
