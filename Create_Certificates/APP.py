@@ -23,6 +23,33 @@ class Convert:
         ButtonVar1 = StringVar()
         ButtonVar2 = StringVar()
         ButtonVar3 = StringVar()
+
+        menubar = Menu(master)
+        filemenu = Menu(menubar, tearoff=0)
+        filemenu.add_command(label="New")
+        filemenu.add_command(label="Open",command=lambda:choose_excel())
+        filemenu.add_command(label="Save")
+        filemenu.add_command(label="Save as...")
+        filemenu.add_command(label="Close")
+        filemenu.add_separator()
+        filemenu.add_command(label="Exit", command=master.quit)
+        menubar.add_cascade(label="File", menu=filemenu)
+        
+        editmenu = Menu(menubar, tearoff=0)
+        editmenu.add_command(label="Undo")
+        editmenu.add_separator()
+        editmenu.add_command(label="Cut")
+        editmenu.add_command(label="Copy")
+        editmenu.add_command(label="Paste")
+        editmenu.add_command(label="Delete")
+        editmenu.add_command(label="Select All")
+        menubar.add_cascade(label="Edit", menu=editmenu)
+        
+        helpmenu = Menu(menubar, tearoff=0)
+        helpmenu.add_command(label="Help Index")
+        helpmenu.add_command(label="About...")
+        menubar.add_cascade(label="Help", menu=helpmenu)
+        master.config(menu=menubar)
         
         #full window row configure
         master.grid_rowconfigure(0, weight=1)
@@ -63,13 +90,17 @@ class Convert:
         bgmodel = bgmodel.resize(newsize)
         S_IMG_CERT = ImageTk.PhotoImage(bgmodel)
 
+        bgmodel = PIL.Image.open("send.jpg")
+        newsize = (100, 30)
+        bgmodel = bgmodel.resize(newsize)
+        T_IMG_CERT = ImageTk.PhotoImage(bgmodel)
+
         self.LOG="Starting..."
 
         
         #labelled frames
         self.frame_left  =  LabelFrame(master,text="SELECT EXCEL FILE",labelanchor="n",bg="white",bd=5,fg="red",font=self.label_frame_font)
         self.frame_right  =  LabelFrame(master,text="GENERATE-CERTIFICATES",labelanchor="n",bg="white",bd=5,fg="red",font=self.label_frame_font)
-        #self.BTM = Label(master,text=self.LOG,bg="black",fg="green",font=self.frame2_font,width=1, anchor='w')
         self.BTM = ScrolledText(master,height=1,width=5,bg="white",fg="green")
         self.BTM.insert(tk.INSERT,"-------------LOGS----------\nStarting...")
         
@@ -93,20 +124,19 @@ class Convert:
        
 
         #componants for frame 1
-        self.LABEL_LEFT= Label(self.frame_left,text="DETAILS OF PARTICIPANTS",padx=0,pady=0,bg="white",fg="black",font=self.frame2_font,width=WIDTH_LABEL)
+        self.LABEL_LEFT = Label(self.frame_left,text="DETAILS OF PARTICIPANTS",padx=0,pady=0,bg="white",fg="black",font=self.frame2_font,width=WIDTH_LABEL)
         self.ENTRY_LEFT = Entry(self.frame_left,bg="white",fg="green",textvariable = ButtonVar1,bd=0)
         self.BOX_LEFT_1 = ScrolledText(self.frame_left,width=5)
         self.BOX_LEFT_2 = ScrolledText(self.frame_left,width=5) 
-        self.BTN_LEFT = Button(self.frame_left,text="",image=F_IMG_CERT,height = 20, width = WIDTH_BTN,bg="white",bd=0,fg="black",command=lambda:choose_excel())
+        self.BTN_LEFT   = Button(self.frame_left,text="",image=F_IMG_CERT,height = 20, width = WIDTH_BTN,bg="white",bd=0,fg="black",command=lambda:choose_excel())
         self.BTN_LEFT.image=F_IMG_CERT
-        #self.LABEL_LEFT_B= Label(self.frame_left,text="m",padx=0,pady=0,bg="black",fg="black",font=self.frame2_font,width=WIDTH_LABEL)
+        
         #componants grid for frame 1
         self.LABEL_LEFT.grid(row=0,column=0,sticky="nsew",columnspan=2)
         self.BOX_LEFT_1.grid(row=1,column=0,sticky="nsew")
         self.BOX_LEFT_2.grid(row=1,column=1,sticky="nsew")
         self.BTN_LEFT.grid(row=2,column=0,sticky="nsew",columnspan=2)
         self.ENTRY_LEFT.grid(row=3,column=0,sticky="ew",columnspan=2)
-        #self.LABEL_LEFT_B.grid(row=4,column=0,sticky="sew",columnspan=2)
      
         # -------------------------------- RIGHT -------------------------------- #
         
@@ -134,6 +164,8 @@ class Convert:
 
         self.BTN_RIGHT_GNT = Button(self.frame_right,text="GENERATE",image=S_IMG_CERT,height = 40, width = WIDTH_BTN,bg="white",bd=0,fg="black",command=lambda:generate())
         self.BTN_RIGHT_GNT.image=S_IMG_CERT
+        self.BTN_RIGHT_GNT_2 = Button(self.frame_right,text="GENERATE",image=T_IMG_CERT,height = 40, width = WIDTH_BTN,bg="white",bd=0,fg="black",command=lambda:send_to_emails())
+        self.BTN_RIGHT_GNT_2.image=T_IMG_CERT
         
         #componants grid for frame 1
         self.LABEL_RIGHT.grid(row=0,column=0,sticky="nsew",columnspan=3)
@@ -142,7 +174,8 @@ class Convert:
         self.LABEL_RIGHT_IM.grid(row=3,column=0,sticky="ew")
         self.ENTRY_LEFT_IMW.grid(row=3,column=1,sticky="ew")
         self.ENTRY_LEFT_IMH.grid(row=3,column=2,sticky="ew")
-        self.BTN_RIGHT_GNT.grid(row=4,column=0,sticky="ew",columnspan=3)
+        self.BTN_RIGHT_GNT.grid(row=4,column=1,sticky="ew")
+        self.BTN_RIGHT_GNT_2.grid(row=4,column=2,sticky="ew")
 
         
         # -----------------------   define functions here    ----------------------- #
@@ -271,8 +304,107 @@ class Convert:
                     csvwriter.writerow(row_data)
     
                 self.ID=str(int(self.ID)+1)
-            self.BTM.insert(tk.INSERT,"\n Certificate Generating compleated.....")
+            self.BTM.insert(tk.INSERT,"\nCertificate Generating compleated.....")
 
+        def send_to_emails():
+            self.BTM.insert(tk.INSERT,"\nSEND TO EMAIL")
+            
+            emailWindow = Toplevel(master)
+            emailWindow.title("Send to Email")
+            emailWindow.geometry("800x500")
+
+            #full window row configure
+            emailWindow.grid_rowconfigure(0, weight=1)
+            emailWindow.grid_rowconfigure(1, weight=1)
+            #full window column configure
+            emailWindow.columnconfigure(0, weight=1)
+            emailWindow.columnconfigure(1, weight=1)
+            #labelled frames
+            frame_left  =  LabelFrame(emailWindow,text="Insert Your Gmail credentials",labelanchor="n",bg="white",bd=1,fg="red",font=self.label_frame_font)
+            frame_right  =  LabelFrame(emailWindow,text="Sended List",labelanchor="n",bg="white",bd=1,fg="red",font=self.label_frame_font)
+            BTM = ScrolledText(emailWindow,height=1,width=5,bg="white",fg="green",bd=1)
+            self.BTM.insert(tk.INSERT,"-------------LOGS----------\nStarting...")
+        
+            #frame grids
+            frame_left.grid(row=0,column=0,sticky="nsew")
+            frame_right.grid(row=0,column=1,sticky="nsew")
+            BTM.grid(row=1,column=0,sticky="nsew",columnspan=2)
+
+            # LEFT frame
+            frame_left.grid_rowconfigure(0, weight=1)
+            frame_left.grid_rowconfigure(1, weight=1)
+            frame_left.columnconfigure(0, weight=1)
+            
+            frame_left_top  =  LabelFrame(frame_left,text="",labelanchor="n",bg="white",bd=0,fg="red",font=self.label_frame_font)
+            frame_left_bottom  =  LabelFrame(frame_left,text="Select",labelanchor="n",bg="white",bd=1,fg="red",font=self.label_frame_font)
+
+            frame_left_top.grid(row=0,column=0,sticky="nsew")
+            frame_left_bottom.grid(row=1,column=0,sticky="nsew")
+
+
+            frame_left_top.grid_rowconfigure(0, weight=1)
+            frame_left_top.grid_rowconfigure(1, weight=1)
+            frame_left_top.grid_rowconfigure(2, weight=1)
+            
+            frame_left_top.columnconfigure(0, weight=1)
+            frame_left_top.columnconfigure(1, weight=1)
+            frame_left_top.columnconfigure(2, weight=1)
+            frame_left_top.columnconfigure(3, weight=1)
+            frame_left_top.columnconfigure(4, weight=1)
+
+            LABEL_LEFT_1 = Label(frame_left_top,text="Email : ",padx=20,pady=0,bg="white",fg="black",font=self.frame2_font,width=WIDTH_LABEL)
+            ENTRY_LEFT_1 = Entry(frame_left_top,bg="white",fg="green",textvariable = ButtonVar1,bd=2)
+            LABEL_LEFT_2 = Label(frame_left_top,text="Name : ",padx=20,pady=0,bg="white",fg="black",font=self.frame2_font,width=WIDTH_LABEL)
+            ENTRY_LEFT_2 = Entry(frame_left_top,bg="white",fg="green",textvariable = ButtonVar1,bd=2)
+            LABEL_LEFT_3 = Label(frame_left_top,text="Password : ",padx=20,pady=0,bg="white",fg="black",font=self.frame2_font,width=WIDTH_LABEL)
+            ENTRY_LEFT_3 = Entry(frame_left_top,bg="white",fg="green",textvariable = ButtonVar1,bd=2)
+
+            LABEL_LEFT_1.grid(row=0,column=1,sticky="w")
+            ENTRY_LEFT_1.grid(row=0,column=3,sticky="w")
+            LABEL_LEFT_2.grid(row=1,column=1,sticky="w")
+            ENTRY_LEFT_2.grid(row=1,column=3,sticky="w")
+            LABEL_LEFT_3.grid(row=2,column=1,sticky="w")
+            ENTRY_LEFT_3.grid(row=2,column=3,sticky="w")
+
+
+
+            frame_left_bottom.grid_rowconfigure(0, weight=1)
+            frame_left_bottom.grid_rowconfigure(1, weight=1)
+            frame_left_bottom.grid_rowconfigure(2, weight=1)
+            frame_left_bottom.columnconfigure(0, weight=1)
+            frame_left_bottom.columnconfigure(1, weight=1)
+            frame_left_bottom.columnconfigure(2, weight=1)
+            frame_left_bottom.columnconfigure(3, weight=1)
+            frame_left_bottom.columnconfigure(4, weight=1)
+
+            
+            BTN_LEFT_21   = Button(frame_left_bottom,text="open CSV", width = WIDTH_BTN,bg="white",bd=1,fg="black",command=lambda:choose_excel())
+            ENTRY_LEFT_21 = Entry(frame_left_bottom,bg="white",fg="green",textvariable = ButtonVar1,bd=2)
+            BTN_LEFT_22   = Button(frame_left_bottom,text="CERT FOLDER", width = WIDTH_BTN,bg="white",bd=1,fg="black",command=lambda:choose_excel())
+            ENTRY_LEFT_22 = Entry(frame_left_bottom,bg="white",fg="green",textvariable = ButtonVar1,bd=2)
+
+            BTN_LEFT_21.grid(row=0,column=1,sticky="ew")
+            ENTRY_LEFT_21.grid(row=0,column=3,sticky="ew")
+            BTN_LEFT_22.grid(row=1,column=1,sticky="ew")
+            ENTRY_LEFT_22.grid(row=1,column=3,sticky="ew")
+            
+            # RIGHT frame
+            frame_right.grid_rowconfigure(0, weight=1)
+            frame_right.columnconfigure(0, weight=1)
+
+            BOX_right = ScrolledText(frame_right,width=5,bd=0)
+
+            BOX_right.grid(row=0,column=0,sticky="nsew")
+      
+            
+            
+
+
+        #------------------ MENUS ----------------------------#
+        def donothing():
+           filewin = Toplevel(root)
+           button = Button(filewin, text="Do nothing button")
+           button.pack()
             
             
         
