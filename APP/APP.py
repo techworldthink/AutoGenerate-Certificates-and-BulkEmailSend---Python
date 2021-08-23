@@ -11,7 +11,11 @@ from tkinter import font
 from tkinter import messagebox
 from tkinter.scrolledtext import ScrolledText
 from tkinter.filedialog import askopenfilename
+from tkinter.filedialog  import askdirectory
 from tkinter.messagebox import showinfo
+import smtplib
+import imghdr
+from email.message import EmailMessage
 
 class Convert:
     def __init__(self, master):
@@ -95,12 +99,17 @@ class Convert:
         bgmodel = bgmodel.resize(newsize)
         T_IMG_CERT = ImageTk.PhotoImage(bgmodel)
 
+        bgmodel = PIL.Image.open("save.jpg")
+        newsize = (100, 30)
+        bgmodel = bgmodel.resize(newsize)
+        SAVE_IMG_CERT = ImageTk.PhotoImage(bgmodel)
+
         self.LOG="Starting..."
 
         
         #labelled frames
-        self.frame_left  =  LabelFrame(master,text="SELECT EXCEL FILE",labelanchor="n",bg="white",bd=5,fg="red",font=self.label_frame_font)
-        self.frame_right  =  LabelFrame(master,text="GENERATE-CERTIFICATES",labelanchor="n",bg="white",bd=5,fg="red",font=self.label_frame_font)
+        self.frame_left  =  LabelFrame(master,text="SELECT EXCEL FILE",labelanchor="n",bg="white",bd=2,fg="red",font=self.label_frame_font)
+        self.frame_right  =  LabelFrame(master,text="GENERATE-CERTIFICATES",labelanchor="n",bg="white",bd=2,fg="red",font=self.label_frame_font)
         self.BTM = ScrolledText(master,height=1,width=5,bg="white",fg="green")
         self.BTM.insert(tk.INSERT,"-------------LOGS----------\nStarting...")
         
@@ -152,20 +161,23 @@ class Convert:
         self.frame_right.columnconfigure(2, weight=1)
 
         #componants for frame 2
-        self.LABEL_RIGHT= Label(self.frame_right,text="DETAILS OF CERTIFICATE",padx=0,pady=0,bg="white",fg="black",font=self.frame2_font,width=WIDTH_LABEL)
-        self.LABEL_RIGHT_2= Label(self.frame_right,image=IMG_CERT,text="DETAILS OF CERTIFICATE",padx=0,pady=0,bg="white",fg="black",font=self.frame2_font,width=WIDTH_LABEL)
-        self.BTN_RIGHT_1 = Button(self.frame_right,text="",image=F_IMG_CERT,height = 50, width = WIDTH_BTN,bg="white",bd=0,fg="black",command=lambda:choose_image())
-        self.LABEL_RIGHT_2.image=IMG_CERT
-        self.BTN_RIGHT_1.image=F_IMG_CERT
+        self.LABEL_RIGHT    = Label(self.frame_right,text="DETAILS OF CERTIFICATE",padx=0,pady=0,bg="white",fg="black",font=self.frame2_font,width=WIDTH_LABEL)
+        self.LABEL_RIGHT_2  = Label(self.frame_right,image=IMG_CERT,text="DETAILS OF CERTIFICATE",padx=0,pady=0,bg="white",fg="black",font=self.frame2_font,width=WIDTH_LABEL)
+        self.BTN_RIGHT_1    = Button(self.frame_right,text="",image=F_IMG_CERT,height = 50, width = WIDTH_BTN,bg="white",bd=0,fg="black",command=lambda:choose_image())
+        self.LABEL_RIGHT_2.image = IMG_CERT
+        self.BTN_RIGHT_1.image  = F_IMG_CERT
         
-        self.LABEL_RIGHT_IM = Label(self.frame_right,text="Size",padx=0,pady=0,bg="white",fg="black",font=self.frame2_font,width=WIDTH_LABEL)
-        self.ENTRY_LEFT_IMW = Entry(self.frame_right,bg="white",fg="black",textvariable = ButtonVar2,bd=5)
-        self.ENTRY_LEFT_IMH = Entry(self.frame_right,bg="white",fg="black",textvariable = ButtonVar3,bd=5)
+        self.LABEL_RIGHT_IM = Label(self.frame_right,text="Size",padx=0,pady=0,bg="white",fg="black",font=self.frame2_font,width=WIDTH_BTN)
+        self.ENTRY_LEFT_IMW = Entry(self.frame_right,bg="white",fg="black",textvariable = ButtonVar2,bd=0, width = WIDTH_BTN)
+        self.ENTRY_LEFT_IMH = Entry(self.frame_right,bg="white",fg="black",textvariable = ButtonVar3,bd=0, width = WIDTH_BTN)
 
-        self.BTN_RIGHT_GNT = Button(self.frame_right,text="GENERATE",image=S_IMG_CERT,height = 40, width = WIDTH_BTN,bg="white",bd=0,fg="black",command=lambda:generate())
-        self.BTN_RIGHT_GNT.image=S_IMG_CERT
-        self.BTN_RIGHT_GNT_2 = Button(self.frame_right,text="GENERATE",image=T_IMG_CERT,height = 40, width = WIDTH_BTN,bg="white",bd=0,fg="black",command=lambda:send_to_emails())
-        self.BTN_RIGHT_GNT_2.image=T_IMG_CERT
+        self.BTN_RIGHT_GNT_1 = Button(self.frame_right,text="GENERATE",image=SAVE_IMG_CERT,height = 40, width = WIDTH_BTN,bg="white",bd=0,fg="black",command=lambda:select_directory())
+        self.BTN_RIGHT_GNT_1.image=SAVE_IMG_CERT
+        self.BTN_RIGHT_GNT_2 = Button(self.frame_right,text="GENERATE",image=S_IMG_CERT,height = 40, width = WIDTH_BTN,bg="white",bd=0,fg="black",command=lambda:generate())
+        self.BTN_RIGHT_GNT_2.image=S_IMG_CERT
+        self.BTN_RIGHT_GNT_3 = Button(self.frame_right,text="GENERATE",image=T_IMG_CERT,height = 40, width = WIDTH_BTN,bg="white",bd=0,fg="black",command=lambda:send_to_emails())
+        self.BTN_RIGHT_GNT_3.image=T_IMG_CERT
+        
         
         #componants grid for frame 1
         self.LABEL_RIGHT.grid(row=0,column=0,sticky="nsew",columnspan=3)
@@ -174,36 +186,59 @@ class Convert:
         self.LABEL_RIGHT_IM.grid(row=3,column=0,sticky="ew")
         self.ENTRY_LEFT_IMW.grid(row=3,column=1,sticky="ew")
         self.ENTRY_LEFT_IMH.grid(row=3,column=2,sticky="ew")
-        self.BTN_RIGHT_GNT.grid(row=4,column=1,sticky="ew")
-        self.BTN_RIGHT_GNT_2.grid(row=4,column=2,sticky="ew")
+        self.BTN_RIGHT_GNT_1.grid(row=4,column=0,sticky="nsew")
+        self.BTN_RIGHT_GNT_2.grid(row=4,column=1,sticky="nsew")
+        self.BTN_RIGHT_GNT_3.grid(row=4,column=2,sticky="nsew")
 
         
         # -----------------------   define functions here    ----------------------- #
-                                
+        self.ID=str(0)                        
         self.counts_n = 0
         self.counts_e = 0
         self.name_list=[]
         self.email_list = []
         self.model_img = model
+        self.save_cert_to = ''
+        
+        def choose_directory():
+            directory = askdirectory()
+            if not directory:
+                self.BTM.insert(tk.INSERT,"\nSelect Directory !")
+                return 0
+            self.BTM.insert(tk.INSERT,"\nSelected directory : "+directory)
+            return directory
+        
+        def create_send_dir():
+            cert_dir  = choose_directory()
+            if not cert_dir:
+                self.BTM.insert(tk.INSERT,"\nError selecting directory")
+                return 0
+            self.csvFile = cert_dir+"/Send_to_emails.csv"
+            # head names
+            self.fields = ['name', 'email', 'CID','certFileName']
+            # open csv for write
+            with open(self.csvFile, 'w',newline='') as toCsv:
+                # creating a csv writer object
+                csvwriter = csv.writer(toCsv)
+                # writing the fields
+                csvwriter.writerow(self.fields)
+            #ID
+            self.ID=str(0)
 
-        # name of csv file
-        self.csvFile = "Send_list/Send_to_emails.csv"
-        # head names
-        self.fields = ['name', 'email', 'CID','certFileName']
-        # open csv for write
-        with open(self.csvFile, 'w',newline='') as toCsv:
-            # creating a csv writer object
-            csvwriter = csv.writer(toCsv)
-            # writing the fields
-            csvwriter.writerow(self.fields)
-        #ID
-        self.ID=str(0)
+        def select_directory():
+            directory = askdirectory()
+            if not directory:
+                self.BTM.insert(tk.INSERT,"\nSelect Directory !")
+            self.save_cert_to = directory
+            self.BTM.insert(tk.INSERT,"\nSelected directory : "+directory)
+            CERT_folder.set(self.save_cert_to)
+            
 
 
         def select_file():
             filetypes = (
-                ('text files', '*.txt'),
-                ('All files', '*.*')
+                ('All files', '*.*'),
+                ('text files', '*.txt')
             )
 
             filename = askopenfilename(
@@ -236,7 +271,7 @@ class Convert:
             self.BTM.insert(tk.INSERT,"\nOpen File : "+filename)
             self.BTM.insert(tk.INSERT,"\nFile Selected")
             self.ENTRY_LEFT.delete(0,"end")
-            self.ENTRY_LEFT.insert(0, filename)
+            #self.ENTRY_LEFT.insert(0, filename)
             self.counts_n = 0
             self.counts_e = 0
             i,j = 0,0;
@@ -262,6 +297,7 @@ class Convert:
             filename = select_file()
             if not filename:
                 self.BTM.insert(tk.INSERT,"\nSelect A valid Image File (.png)")
+                showinfo(title='warning',message="Select valid certificate")
                 return
             self.BTM.insert(tk.INSERT,"\nOpen File : "+filename)
             model = PIL.Image.open(filename)
@@ -280,6 +316,9 @@ class Convert:
             self.BTM.insert(tk.INSERT,"\nFind H, W")
             
         def generate():
+            self.BTM.insert(tk.INSERT,"\nDirectory Creating")
+            if not create_send_dir():
+                return 0
             self.BTM.insert(tk.INSERT,"\nCertificate Generating ..... wait ")
             for name in self.name_list:
                 image = self.model_img      
@@ -295,7 +334,7 @@ class Convert:
                 # add name
                 d.text(location, name, fill = self.text_color, font = self.font)
                 # save certificates in pdf format
-                image.save("Generate/CID_"+self.ID+"_"+ name + ".pdf")
+                image.save(self.save_cert_to+"/CID_"+self.ID+"_"+ name + ".pdf")
     
                 # generate csv file
                 with open(self.csvFile, 'a',newline='') as toCsv:
@@ -305,7 +344,104 @@ class Convert:
     
                 self.ID=str(int(self.ID)+1)
             self.BTM.insert(tk.INSERT,"\nCertificate Generating compleated.....")
+            
+            
+            #CERT_folder.set(self.save_cert_to)
+            
 
+
+
+        ################  SEND EMAILS WINDOW  #####################
+        E_name = StringVar()
+        E_email = StringVar()
+        E_password = StringVar()
+        CSV_entry = StringVar()
+        CERT_folder = StringVar()
+        Send_Emails_Path =''
+        Send_Cert_Path=''
+        self.BOX_right_email = ScrolledText()
+        self.BTM_email = ScrolledText()
+
+        def choose_cert_folder():
+            self.BTM.insert(tk.INSERT,"\nChoose Certificates folders")
+            directory = choose_directory()
+            if not directory:
+                self.BTM.insert(tk.INSERT,"\nSelect Directory !!!")
+                return
+            CERT_folder.set(directory)
+            self.BTM.insert(tk.INSERT,"\nCertificate Folder  : "+directory)
+            
+        def choose_CSV():
+            self.BTM.insert(tk.INSERT,"\nChoose CSV")
+            filename = select_file()
+            if not filename:
+                self.BTM.insert(tk.INSERT,"\nSelect Correct format (CSV FILES ONLY")
+                return
+            self.BTM.insert(tk.INSERT,"\nOpen File : "+filename)
+            CSV_entry.set(filename)
+            
+        
+        def send_emails():
+            email =  E_email.get()
+            password = E_password.get()
+            fromName = E_name.get()
+            
+            if not CERT_folder.get():
+                showinfo(title='warning',message="Select Certificates folder")
+                return
+            
+            if not CSV_entry.get():
+                showinfo(title='warning',message="Select CSV file with fields(email,certFileName)")
+                return
+            
+            csvFile = CERT_folder.get()+"/Failed_listemails.csv"
+            fields = ['name', 'email', 'CID','certFileName']
+            with open(csvFile, 'w',newline='') as toCsv:
+                csvwriter = csv.writer(toCsv)
+                csvwriter.writerow(fields)
+            sent = 0
+            failed = 0
+            
+            with open (CSV_entry.get(),'r') as plist:
+                plist_read=csv.DictReader(plist)
+                for line in plist_read:
+                    toName=line['name']
+                    toEmail=line['email']
+                    certID=line['CID']
+                    attachment=line['certFileName']
+                    
+                    msg = EmailMessage()
+                    msg['Subject'] = 'CODING TRAINING 2021'
+                    msg['From'] = fromName + "<" + email + ">"
+                    msg['To'] = toEmail
+
+                    body = 'Hi '+toName+', \n\nHope you are doing well! Certificates Attached.\n\nRegards,\nCETAA\nCET'
+                    msg.set_content(body)
+                
+                    with open (CERT_folder.get()+"/"+attachment+".pdf",'rb') as f:
+                        file_data=f.read()
+                        file_name=f.name
+                    msg.add_attachment(file_data,maintype='application',subtype='octet-stream',filename=file_name)
+
+                    try:
+                        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
+                            smtp.login(email, password)
+                            smtp.send_message(msg)
+                        #print("\nMail sent to ",toName,"(",toEmail,")","\nFile Attached:",attachment)
+                        self.BOX_right_email.insert(tk.END,"\nMail sent to " + toName + " " + toEmail + "\nFile Attached: "+attachment)
+                        sent+=1
+                    except:
+                        #print("Error! : Mail not Sent to ",toName,"    ",toEmail)
+                        self.BTM_email.insert(tk.INSERT,"\n Error! : Mail not Sent to "+toName+"    "+toEmail)
+                        failed+=1
+
+                        with open(csvFile, 'a',newline='') as toCsv:
+                            csvwriter = csv.writer(toCsv)
+                            row_data = [toName,toEmail,certID,attachment]
+                            csvwriter.writerow(row_data)
+
+            self.BTM.insert(tk.INSERT,"\n------------REPORT------------\nSuccessful Mails : "+str(sent)+"\nFailed : ",str(failed))
+        
         def send_to_emails():
             self.BTM.insert(tk.INSERT,"\nSEND TO EMAIL")
             
@@ -322,13 +458,13 @@ class Convert:
             #labelled frames
             frame_left  =  LabelFrame(emailWindow,text="Insert Your Gmail credentials",labelanchor="n",bg="white",bd=1,fg="red",font=self.label_frame_font)
             frame_right  =  LabelFrame(emailWindow,text="Sended List",labelanchor="n",bg="white",bd=1,fg="red",font=self.label_frame_font)
-            BTM = ScrolledText(emailWindow,height=1,width=5,bg="white",fg="green",bd=1)
+            self.BTM_email = ScrolledText(emailWindow,height=1,width=5,bg="white",fg="green",bd=1)
             self.BTM.insert(tk.INSERT,"-------------LOGS----------\nStarting...")
         
             #frame grids
             frame_left.grid(row=0,column=0,sticky="nsew")
             frame_right.grid(row=0,column=1,sticky="nsew")
-            BTM.grid(row=1,column=0,sticky="nsew",columnspan=2)
+            self.BTM_email.grid(row=1,column=0,sticky="nsew",columnspan=2)
 
             # LEFT frame
             frame_left.grid_rowconfigure(0, weight=1)
@@ -353,11 +489,11 @@ class Convert:
             frame_left_top.columnconfigure(4, weight=1)
 
             LABEL_LEFT_1 = Label(frame_left_top,text="Email : ",padx=20,pady=0,bg="white",fg="black",font=self.frame2_font,width=WIDTH_LABEL)
-            ENTRY_LEFT_1 = Entry(frame_left_top,bg="white",fg="green",textvariable = ButtonVar1,bd=2)
+            ENTRY_LEFT_1 = Entry(frame_left_top,bg="white",fg="green",textvariable = E_email,bd=2)
             LABEL_LEFT_2 = Label(frame_left_top,text="Name : ",padx=20,pady=0,bg="white",fg="black",font=self.frame2_font,width=WIDTH_LABEL)
-            ENTRY_LEFT_2 = Entry(frame_left_top,bg="white",fg="green",textvariable = ButtonVar1,bd=2)
+            ENTRY_LEFT_2 = Entry(frame_left_top,bg="white",fg="green",textvariable = E_name,bd=2)
             LABEL_LEFT_3 = Label(frame_left_top,text="Password : ",padx=20,pady=0,bg="white",fg="black",font=self.frame2_font,width=WIDTH_LABEL)
-            ENTRY_LEFT_3 = Entry(frame_left_top,bg="white",fg="green",textvariable = ButtonVar1,bd=2)
+            ENTRY_LEFT_3 = Entry(frame_left_top,bg="white",fg="green",textvariable = E_password,bd=2)
 
             LABEL_LEFT_1.grid(row=0,column=1,sticky="w")
             ENTRY_LEFT_1.grid(row=0,column=3,sticky="w")
@@ -371,6 +507,7 @@ class Convert:
             frame_left_bottom.grid_rowconfigure(0, weight=1)
             frame_left_bottom.grid_rowconfigure(1, weight=1)
             frame_left_bottom.grid_rowconfigure(2, weight=1)
+            
             frame_left_bottom.columnconfigure(0, weight=1)
             frame_left_bottom.columnconfigure(1, weight=1)
             frame_left_bottom.columnconfigure(2, weight=1)
@@ -378,23 +515,25 @@ class Convert:
             frame_left_bottom.columnconfigure(4, weight=1)
 
             
-            BTN_LEFT_21   = Button(frame_left_bottom,text="open CSV", width = WIDTH_BTN,bg="white",bd=1,fg="black",command=lambda:choose_excel())
-            ENTRY_LEFT_21 = Entry(frame_left_bottom,bg="white",fg="green",textvariable = ButtonVar1,bd=2)
-            BTN_LEFT_22   = Button(frame_left_bottom,text="CERT FOLDER", width = WIDTH_BTN,bg="white",bd=1,fg="black",command=lambda:choose_excel())
-            ENTRY_LEFT_22 = Entry(frame_left_bottom,bg="white",fg="green",textvariable = ButtonVar1,bd=2)
+            BTN_LEFT_21   = Button(frame_left_bottom,text="open CSV", width = WIDTH_BTN,bg="white",bd=1,fg="black",command=lambda:choose_CSV())
+            ENTRY_LEFT_21 = Entry(frame_left_bottom,bg="white",fg="green",textvariable =CSV_entry,bd=2)
+            BTN_LEFT_22   = Button(frame_left_bottom,text="CERT FOLDER", width = WIDTH_BTN,bg="white",bd=1,fg="black",command=lambda:choose_cert_folder())
+            ENTRY_LEFT_22 = Entry(frame_left_bottom,bg="white",fg="green",textvariable = CERT_folder,bd=2)
+            BTN_LEFT_23   = Button(frame_left_bottom,text="send emails", width = WIDTH_BTN,bg="white",bd=1,fg="black",command=lambda:send_emails())
 
             BTN_LEFT_21.grid(row=0,column=1,sticky="ew")
             ENTRY_LEFT_21.grid(row=0,column=3,sticky="ew")
             BTN_LEFT_22.grid(row=1,column=1,sticky="ew")
             ENTRY_LEFT_22.grid(row=1,column=3,sticky="ew")
+            BTN_LEFT_23.grid(row=2,column=0,sticky="ew",columnspan=5)
             
             # RIGHT frame
             frame_right.grid_rowconfigure(0, weight=1)
             frame_right.columnconfigure(0, weight=1)
 
-            BOX_right = ScrolledText(frame_right,width=5,bd=0)
+            self.BOX_right_email = ScrolledText(frame_right,width=5,bd=0)
 
-            BOX_right.grid(row=0,column=0,sticky="nsew")
+            self.BOX_right_email.grid(row=0,column=0,sticky="nsew")
       
             
             
